@@ -72,9 +72,8 @@ app.post("/analyze", async (req, res) => {
 
 let cleaned = text
   .split("\n").join(" ")
-  .split("
-  .split("
-").join("")
+  .split("```json").join("")
+  .split("").join("")
   .trim();
 
 let parsed;
@@ -98,6 +97,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
 
 
 
