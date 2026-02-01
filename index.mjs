@@ -23,7 +23,7 @@ app.post("/analyze", async (req, res) => {
     }
 
     const prompt = 
-Sen oqituvchi darsini tahlil qiluvchi AI san.
+Sen 'oqituvchi' darsini tahlil qiluvchi AI san.
 
 Quyidagi dars matnini tahlil qil va JSON qaytar:
 
@@ -65,4 +65,5 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
 
