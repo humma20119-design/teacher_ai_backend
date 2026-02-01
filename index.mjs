@@ -79,7 +79,7 @@ async function analyzeWithGroq(transcript, fan) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: Bearer ${groqKey},
+      Authorization: `Bearer ${groqKey}`,
     },
     body: JSON.stringify({
       model: "llama-3.1-8b-instant",
@@ -186,7 +186,7 @@ app.post("/analyze-audio", upload.single("audio"), async (req, res) => {
       {
         method: "POST",
         headers: {
-          Authorization: Bearer ${process.env.OPENAI_API_KEY},
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: formData,
       }
@@ -224,7 +224,7 @@ Faqat JSON qaytar:
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: Bearer ${process.env.GROQ_API_KEY},
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
@@ -245,6 +245,7 @@ Faqat JSON qaytar:
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
