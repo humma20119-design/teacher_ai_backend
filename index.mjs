@@ -73,7 +73,7 @@ async function analyzeWithGroq(transcript, fan) {
   ].join("\n");
 
   const userPrompt =
-    Fan: ${fan || ""}\n\nDars transkripti:\n${transcript};
+    `Fan: ${fan || ""}\n\nDars transkripti:\n${transcript}`;
 
   const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -245,5 +245,6 @@ Faqat JSON qaytar:
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
