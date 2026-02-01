@@ -25,7 +25,7 @@ app.post("/analyze", async (req, res) => {
       {
         method: "POST",
         headers: {
-          "Authorization": Bearer ${process.env.GROQ_API_KEY},
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -78,3 +78,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on", PORT);
 });
+
