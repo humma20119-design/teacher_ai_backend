@@ -47,7 +47,7 @@ app.post("/analyze", async (req, res) => {
       headers: {
         "Content-Type": "application/json",
         // MUHIM: bu string ichida bo‘lishi shart!
-        "Authorization": Bearer ${apiKey}
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
@@ -97,4 +97,5 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
+
 
