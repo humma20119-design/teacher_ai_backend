@@ -93,7 +93,7 @@ async function analyzeWithGroq(transcript, fan) {
 
   const data = await groqRes.json();
   if (!groqRes.ok) {
-    throw new Error(Groq error: ${groqRes.status} ${JSON.stringify(data)});
+    throw new Error(`Groq error: ${groqRes.status} ${JSON.stringify(data)}`);
   }
 
   const text = (data?.choices?.[0]?.message?.content || "").toString();
@@ -245,6 +245,7 @@ Faqat JSON qaytar:
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
