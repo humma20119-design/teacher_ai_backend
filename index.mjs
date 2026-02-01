@@ -4,16 +4,10 @@ import fetch from "node-fetch";
 const app = express();
 app.use(express.json());
 
-/* =======================
-   HEALTH CHECK
-======================= */
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-/* =======================
-   AI DARSLARNI TAHLIL QILISH
-======================= */
 app.post("/analyze", async (req, res) => {
   try {
     const { fan, transcript } = req.body;
@@ -30,6 +24,7 @@ app.post("/analyze", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // 🔥 MUHIM TUZATISH SHU YERDA
           "Authorization": Bearer ${process.env.GROQ_API_KEY}
         },
         body: JSON.stringify({
@@ -38,21 +33,23 @@ app.post("/analyze", async (req, res) => {
             {
               role: "system",
               content:
-                "Sen o‘qituvchining darsini tahlil qiladigan AI yordamchisan. Javobni faqat JSON formatda qaytar."
+                "Sen o‘qituvchi darsini tahlil qiladigan AI’san. Faqat JSON qaytar."
             },
             {
               role: "user",
-              content: Fan: ${fan}
+              content: 
+Fan: ${fan}
 Dars matni:
 ${transcript}
 
-JSON formatda javob ber:
+JSON format:
 {
   "score": number,
   "summary": string,
   "strengths": string[],
   "improvements": string[]
 }
+
             }
           ],
           temperature: 0.4
@@ -62,10 +59,9 @@ JSON formatda javob ber:
 
     const data = await response.json();
 
-    const text = data.choices[0].message.content;
-
-    // JSON parse qilishga urinamiz
-    const result = JSON.parse(text);
+    const result = JSON.parse(
+      data.choices[0].message.content
+    );
 
     res.json(result);
   } catch (err) {
@@ -77,10 +73,7 @@ JSON formatda javob ber:
   }
 });
 
-/* =======================
-   SERVER START
-======================= */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server ishlayapti, port:", PORT);
+  console.log("Server ishga tushdi:", PORT);
 });
