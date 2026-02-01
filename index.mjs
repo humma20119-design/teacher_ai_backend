@@ -40,7 +40,7 @@ app.post("/analyze", async (req, res) => {
       "Faqat JSON qaytar. Hech qanday ortiqcha matn yozma."
     ].join("\n");
 
-    const userPrompt = Dars matni:\n${transcript};
+    const userPrompt = `Dars matni:\n${transcript}`;
 
     const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -97,3 +97,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server listening on port", PORT);
 });
+
