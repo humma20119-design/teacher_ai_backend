@@ -2,11 +2,20 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+// Health check
 app.get("/health", (req, res) => {
- app.post('/analyze-lesson', async (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Teacher AI backend ishlayapti"
+  });
+});
+
+// AI analyze (hozircha fake javob)
+app.post("/analyze-lesson", async (req, res) => {
   try {
     const { transcript, meta } = req.body;
 
@@ -16,7 +25,6 @@ app.get("/health", (req, res) => {
       });
     }
 
-    // Hozircha fake javob (test uchun)
     res.json({
       score: 85,
       summary: "Dars yaxshi o‘tilgan",
@@ -27,7 +35,7 @@ app.get("/health", (req, res) => {
       improvements: [
         "O‘quvchilar bilan ko‘proq savol-javob"
       ],
-      fan: meta?.fan ?? "Noma’lum fan"
+      fan: meta?.fan ?? "Noma'lum fan"
     });
 
   } catch (e) {
@@ -36,4 +44,11 @@ app.get("/health", (req, res) => {
       details: e.message
     });
   }
+});
+
+// PORT (Render uchun MUHIM)
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, () => {
+  console.log("Server ishga tushdi:", PORT);
 });
