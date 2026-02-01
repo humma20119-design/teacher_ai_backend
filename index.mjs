@@ -38,7 +38,7 @@ async function transcribeWithOpenAI(filePath) {
   const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
     headers: {
-      Authorization: Bearer ${openaiKey},
+      Authorization: `Bearer ${openaiKey}`,
     },
     body: form,
   });
@@ -245,3 +245,4 @@ Faqat JSON qaytar:
     res.status(500).json({ error: err.message });
   }
 });
+
