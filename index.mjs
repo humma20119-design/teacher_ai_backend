@@ -70,20 +70,20 @@ app.post("/analyze", async (req, res) => {
 
    const text = data?.choices?.[0]?.message?.content || "";
 
-    let cleaned = text;
-    cleaned = cleaned.split("\n").join(" ");
-    cleaned = cleaned.split("
-    cleaned = cleaned.split("
-").join("");
-    cleaned = cleaned.trim();
+let cleaned = text
+  .split("\n").join(" ")
+  .split("
+  .split("
+").join("")
+  .trim();
 
-    let parsed;
-    try {
-      parsed = JSON.parse(cleaned);
-      return res.json(parsed);
-    } catch (e) {
-      return res.json({ raw: text });
-    }
+let parsed;
+try {
+  parsed = JSON.parse(cleaned);
+  return res.json(parsed);
+} catch (e) {
+  return res.json({ raw: text });
+}
 
   } catch (err) {
     return res.status(500).json({
@@ -98,6 +98,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
 
 
 
