@@ -45,7 +45,7 @@ async function transcribeWithOpenAI(filePath) {
 
   const data = await resp.json();
   if (!resp.ok) {
-    throw new Error(OpenAI transcribe error: ${resp.status} ${JSON.stringify(data)});
+    throw new Error(`OpenAI transcribe error: ${resp.status} ${JSON.stringify(data)}`);
   }
 
   // Ko‘pincha javob { text: "..." }
@@ -245,4 +245,5 @@ Faqat JSON qaytar:
     res.status(500).json({ error: err.message });
   }
 });
+
 
