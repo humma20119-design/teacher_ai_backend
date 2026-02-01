@@ -3,7 +3,7 @@ import cors from "cors";
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json());
 
 app.get("/health", (req, res) => {
   res.json({ ok: true });
@@ -13,66 +13,55 @@ app.post("/analyze", async (req, res) => {
   try {
     const { transcript, fan } = req.body;
 
-    if (!transcript || typeof transcript !== "string") {
-      return res.status(400).json({ error: "transcript required (string)" });
+    if (!transcript) {
+      return res.status(400).json({ error: "transcript required" });
     }
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: "GROQ_API_KEY not set on server" });
+      return res.status(500).json({ error: "GROQ_API_KEY yo‘q" });
     }
 
     const prompt = 
-Sen o'qituvchi darsini tahlil qiluvchi AI'san.
-Quyidagi transcript asosida JSON qaytar:
+Sen o‘qituvchi darsini tahlil qiluvchi AI san.
 
-JSON format:
+Quyidagi dars matnini tahlil qil va JSON qaytar:
+
 {
   "score": 0-100,
-  "summary": "...",
-  "strengths": ["..."],
-  "improvements": ["..."],
-  "fan": "..."
+  "summary": "qisqa xulosa",
+  "strengths": ["kuchli tomonlar"],
+  "improvements": ["takomillashtirish"],
+  "fan": "${fan || "noma'lum"}"
 }
 
-Fan (agar berilgan bo'lsa) shuni yoz: ${fan || "aniqlanmagan"}.
-
-Transcript:
+Dars matni:
 ${transcript}
 ;
 
-    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: Bearer ${apiKey},
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2,
-      }),
-    });
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: Bearer ${apiKey},
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      }
+    );
 
-    const data = await r.json();
-
-    if (!r.ok) {
-      return res.status(500).json({
-        error: "groq_request_failed",
-        status: r.status,
-        details: data,
-      });
-    }
-
-    const text = data?.choices?.[0]?.message?.content ?? "";
-    return res.json({ raw: text });
+    const data = await response.json();
+    res.json(data);
   } catch (e) {
-    return res.status(500).json({ error: "server_error", details: String(e) });
+    res.status(500).json({ error: String(e) });
   }
 });
 
-// Render uchun port
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log("Server is running on port:", PORT);
+  console.log("Server running on port", PORT);
 });
