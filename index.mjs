@@ -1,53 +1,86 @@
 import express from "express";
-import cors from "cors";
-import Groq from "groq-sdk";
+import fetch from "node-fetch";
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
-
+/* =======================
+   HEALTH CHECK
+======================= */
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.post("/analyze-lesson", async (req, res) => {
+/* =======================
+   AI DARSLARNI TAHLIL QILISH
+======================= */
+app.post("/analyze", async (req, res) => {
   try {
-    const { transcript, meta } = req.body;
+    const { fan, transcript } = req.body;
 
-    if (!transcript) {
-      return res.status(400).json({ error: "Transcript yuborilmadi" });
+    if (!fan || !transcript) {
+      return res.status(400).json({
+        error: "fan va transcript majburiy"
+      });
     }
 
-    const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
-      messages: [
-        {
-          role: "system",
-          content: "Sen tajribali o‘qituvchisan va darslarni tahlil qilasan"
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": Bearer ${process.env.GROQ_API_KEY}
         },
-        {
-          role: "user",
-          content: Fan: ${meta?.fan}\nDars matni: ${transcript}
-        }
-      ]
-    });
+        body: JSON.stringify({
+          model: "llama3-8b-8192",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Sen o‘qituvchining darsini tahlil qiladigan AI yordamchisan. Javobni faqat JSON formatda qaytar."
+            },
+            {
+              role: "user",
+              content: Fan: ${fan}
+Dars matni:
+${transcript}
 
-    res.json({
-      result: completion.choices[0].message.content
-    });
-  } catch (e) {
+JSON formatda javob ber:
+{
+  "score": number,
+  "summary": string,
+  "strengths": string[],
+  "improvements": string[]
+}
+            }
+          ],
+          temperature: 0.4
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    const text = data.choices[0].message.content;
+
+    // JSON parse qilishga urinamiz
+    const result = JSON.parse(text);
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({
-      error: "Groq xatosi",
-      details: e.message
+      error: "AI tahlilda xatolik",
+      details: err.message
     });
   }
 });
 
-const PORT = process.env.PORT || 10000;
+/* =======================
+   SERVER START
+======================= */
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server ishga tushdi:", PORT);
+  console.log("Server ishlayapti, port:", PORT);
 });
