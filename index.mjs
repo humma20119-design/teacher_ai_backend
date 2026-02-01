@@ -68,34 +68,36 @@ app.post("/analyze", async (req, res) => {
       });
     }
 
-    const text = data?.choices?.[0]?.message?.content || "";
+   const text = data?.choices?.[0]?.message?.content || "";
 
-    // JSON parse qilishga harakat qilamiz
-    // (AI ba’zan ``json ...
-    const cleaned = text
-      .replace(/
-json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    let cleaned = text;
+    cleaned = cleaned.split("\n").join(" ");
+    cleaned = cleaned.split("
+    cleaned = cleaned.split("
+").join("");
+    cleaned = cleaned.trim();
 
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
+      return res.json(parsed);
     } catch (e) {
-      // Agar parse bo‘lmasa, xom matnni qaytaramiz
       return res.json({ raw: text });
     }
 
-    return res.json(parsed);
   } catch (err) {
-    return res.status(500).json({ error: "Server error", message: String(err) });
+    return res.status(500).json({
+      error: "Server error",
+      message: err.message
+    });
   }
 });
 
-// Render PORT ni o‘zi beradi — shuni esdan chiqarmaymiz
-const PORT = process.env.PORT || 10000;
+// 🚀 PORT (Render shuni xohlaydi)
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server listening on port", PORT);
+  console.log("Server running on port", PORT);
 });
+
 
 
