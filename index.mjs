@@ -1,82 +1,78 @@
 import express from "express";
-import fetch from "node-fetch";
+import cors from "cors";
 
 const app = express();
-app.use(express.json());
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
 
-// health
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
-// AI dars tahlili
 app.post("/analyze", async (req, res) => {
   try {
-    const { fan, transcript } = req.body;
+    const { transcript, fan } = req.body;
 
-    if (!fan || !transcript) {
-      return res.status(400).json({
-        error: "fan va transcript majburiy"
+    if (!transcript || typeof transcript !== "string") {
+      return res.status(400).json({ error: "transcript required (string)" });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "GROQ_API_KEY not set on server" });
+    }
+
+    const prompt = 
+Sen o'qituvchi darsini tahlil qiluvchi AI'san.
+Quyidagi transcript asosida JSON qaytar:
+
+JSON format:
+{
+  "score": 0-100,
+  "summary": "...",
+  "strengths": ["..."],
+  "improvements": ["..."],
+  "fan": "..."
+}
+
+Fan (agar berilgan bo'lsa) shuni yoz: ${fan || "aniqlanmagan"}.
+
+Transcript:
+${transcript}
+;
+
+    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: Bearer ${apiKey},
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.2,
+      }),
+    });
+
+    const data = await r.json();
+
+    if (!r.ok) {
+      return res.status(500).json({
+        error: "groq_request_failed",
+        status: r.status,
+        details: data,
       });
     }
 
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Sen tajribali metodist-o‘qituvchisan. Darsni professional tarzda tahlil qil."
-            },
-            {
-              role: "user",
-              content: 
-Fan: `${fan}`
-
-Dars matni:
-${transcript}
-
-Natijani JSON ko‘rinishida qaytar:
-{
-  "score": number,
-  "summary": string,
-  "strengths": string[],
-  "improvements": string[]
-}
-
-            }
-          ],
-          temperature: 0.3
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    const text = data.choices[0].message.content;
-    const json = JSON.parse(text);
-
-    res.json(json);
-  } catch (err) {
-    res.status(500).json({
-      error: "AI xatolik",
-      details: err.message
-    });
+    const text = data?.choices?.[0]?.message?.content ?? "";
+    return res.json({ raw: text });
+  } catch (e) {
+    return res.status(500).json({ error: "server_error", details: String(e) });
   }
 });
 
-// Render PORT
-const PORT = process.env.PORT || 3000;
+// Render uchun port
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log("Server running on", PORT);
+  console.log("Server is running on port:", PORT);
 });
-
-
