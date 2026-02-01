@@ -39,7 +39,7 @@ app.post("/analyze", async (req, res) => {
             {
               role: "user",
               content: 
-Fan: ${fan}
+Fan: `${fan}`
 
 Dars matni:
 ${transcript}
@@ -78,4 +78,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on", PORT);
 });
+
 
