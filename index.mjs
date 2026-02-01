@@ -161,3 +161,87 @@ app.post("/analyze", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server running on port", PORT));
+
+
+
+
+const upload = multer({ dest: "/tmp" });
+
+app.post("/analyze-audio", upload.single("audio"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "Audio topilmadi" });
+    }
+
+    // 1️⃣ Audio → Matn (OpenAI Whisper)
+    const formData = new FormData();
+    formData.append(
+      "file",
+      fs.createReadStream(req.file.path)
+    );
+    formData.append("model", "gpt-4o-transcribe");
+
+    const whisperRes = await fetch(
+      "https://api.openai.com/v1/audio/transcriptions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: Bearer ${process.env.OPENAI_API_KEY},
+        },
+        body: formData,
+      }
+    );
+
+    const whisperData = await whisperRes.json();
+    const transcript = whisperData.text;
+
+    if (!transcript) {
+      return res.status(500).json({ error: "Transkripsiya chiqmadi" });
+    }
+
+    // 2️⃣ Matn → Dars tahlili (GROQ)
+    const systemPrompt = 
+Sen o‘qituvchi darsini tahlil qiluvchi AI san.
+Darsni 45 daqiqalik dars sifatida bahola.
+Faoliyat, tushuntirish, o‘quvchi ishtiroki,
+tartib-intizom va samaradorlikni bahola.
+
+Faqat JSON qaytar:
+{
+  "score": 0-100,
+  "summary": "",
+  "strengths": [],
+  "improvements": [],
+  "engagement": "",
+  "discipline": "",
+  "overall": ""
+}
+;
+
+    const groqRes = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: Bearer ${process.env.GROQ_API_KEY},
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: transcript },
+          ],
+          temperature: 0.3,
+        }),
+      }
+    );
+
+    const groqData = await groqRes.json();
+    const text = groqData.choices[0].message.content;
+
+    res.json(JSON.parse(text));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
